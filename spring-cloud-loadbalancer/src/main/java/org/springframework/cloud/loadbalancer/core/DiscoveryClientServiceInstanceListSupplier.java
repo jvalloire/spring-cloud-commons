@@ -24,6 +24,8 @@ import reactor.core.scheduler.Schedulers;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.AbstractServiceInstanceListSupplierBuilder;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.RequiredFieldNullException;
 import org.springframework.core.env.Environment;
 
 import static org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory.PROPERTY_NAME;
@@ -65,6 +67,68 @@ public class DiscoveryClientServiceInstanceListSupplier
 	@Override
 	public Flux<List<ServiceInstance>> get() {
 		return serviceInstances.collectList().flux();
+	}
+
+	public static Builder discoveryClientServiceInstanceListSupplierBuilder(
+			DiscoveryClient discoveryClient,
+			Environment environment) {
+		return new Builder(discoveryClient, environment);
+	}
+
+	public static Builder discoveryClientServiceInstanceListSupplierBuilder(
+			ReactiveDiscoveryClient reactiveDiscoveryClient,
+			Environment environment) {
+		return new Builder(reactiveDiscoveryClient, environment);
+	}
+
+	public static Builder discoveryClientServiceInstanceListSupplierBuilder() {
+		return new Builder();
+	}
+
+	public static final class Builder extends AbstractServiceInstanceListSupplierBuilder {
+
+		private Object discoveryClient;
+		private Environment environment;
+
+		private Builder(Object discoveryClient, Environment environment) {
+			this.discoveryClient = discoveryClient;
+			this.environment = environment;
+		}
+
+		private Builder() {
+
+		}
+
+		public Builder withDiscoveryClient(Object discoveryClient) {
+			if (!(discoveryClient instanceof DiscoveryClient) && !(discoveryClient instanceof ReactiveDiscoveryClient)) {
+				throw new IllegalArgumentException("Field discoveryClient must by of type " + DiscoveryClient.class
+						.getSimpleName()
+						+ " or " + ReactiveDiscoveryClient.class.getSimpleName());
+			}
+			this.discoveryClient = discoveryClient;
+			return this;
+		}
+
+		public Builder withEnvironment(Environment environment) {
+			this.environment = environment;
+			return this;
+		}
+
+		// TODO: less conditions?
+		public DiscoveryClientServiceInstanceListSupplier build() {
+			if (discoveryClient == null) {
+				throw new RequiredFieldNullException("discoveryClient");
+			}
+			if (environment == null) {
+				throw new RequiredFieldNullException("environment");
+			}
+			if (discoveryClient instanceof DiscoveryClient) {
+				return new DiscoveryClientServiceInstanceListSupplier((DiscoveryClient) discoveryClient,
+						environment);
+			}
+			return new DiscoveryClientServiceInstanceListSupplier((ReactiveDiscoveryClient) discoveryClient,
+					environment);
+		}
 	}
 
 }

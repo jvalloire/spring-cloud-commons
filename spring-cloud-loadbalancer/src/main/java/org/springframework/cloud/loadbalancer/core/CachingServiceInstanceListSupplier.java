@@ -27,6 +27,8 @@ import reactor.core.publisher.Mono;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.AbstractServiceInstanceListSupplierBuilder;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.RequiredFieldNullException;
 
 /**
  * A {@link ServiceInstanceListSupplier} implementation that tries retrieving
@@ -95,6 +97,50 @@ public class CachingServiceInstanceListSupplier implements ServiceInstanceListSu
 	@Override
 	public Flux<List<ServiceInstance>> get() {
 		return serviceInstances;
+	}
+
+	public static Builder cachingServiceInstanceListSupplierBuilder(CacheManager cacheManager) {
+		return new Builder(cacheManager);
+	}
+
+	public static Builder cachingServiceInstanceListSupplierBuilder() {
+		return new Builder();
+	}
+
+	public static class Builder extends AbstractServiceInstanceListSupplierBuilder {
+
+		private CacheManager cacheManager;
+
+		private ServiceInstanceListSupplier delegate;
+
+
+		private Builder(CacheManager cacheManager) {
+			this.cacheManager = cacheManager;
+		}
+
+		private Builder() {
+		}
+
+		public Builder withDelegate(ServiceInstanceListSupplier delegate) {
+			this.delegate = delegate;
+			return this;
+		}
+
+		public Builder withCacheManager(CacheManager cacheManager) {
+			this.cacheManager = cacheManager;
+			return this;
+		}
+
+		public CachingServiceInstanceListSupplier build() {
+			if (cacheManager == null) {
+				throw new RequiredFieldNullException("cacheManager");
+			}
+			if (delegate == null) {
+				throw new RequiredFieldNullException("delegate");
+			}
+			return new CachingServiceInstanceListSupplier(delegate, cacheManager);
+		}
+
 	}
 
 }

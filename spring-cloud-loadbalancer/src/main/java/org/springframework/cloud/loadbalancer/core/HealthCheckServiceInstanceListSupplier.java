@@ -152,4 +152,49 @@ public class HealthCheckServiceInstanceListSupplier
 		}
 	}
 
+	public static Builder healthCheckServiceInstanceListSupplierBuilder() {
+		return new Builder();
+	}
+
+	public static Builder healthCheckServiceInstanceListSupplierBuilder(LoadBalancerProperties.HealthCheck healthCheck,
+			WebClient webClient) {
+		return new Builder(healthCheck, webClient);
+	}
+
+	public static class Builder {
+
+		private ServiceInstanceListSupplier delegate;
+		private LoadBalancerProperties.HealthCheck healthCheck;
+		private WebClient webClient;
+
+		private Builder(LoadBalancerProperties.HealthCheck healthCheck, WebClient webClient) {
+			this.healthCheck = healthCheck;
+			this.webClient = webClient;
+		}
+
+		private Builder() {
+
+		}
+
+		public Builder withDelegate(ServiceInstanceListSupplier delegate) {
+			this.delegate = delegate;
+			return this;
+		}
+
+		public Builder withHealthCheck(LoadBalancerProperties.HealthCheck healthCheck) {
+			this.healthCheck = healthCheck;
+			return this;
+		}
+
+		public Builder withWebClient(WebClient webClient) {
+			this.webClient = webClient;
+			return this;
+		}
+
+		public HealthCheckServiceInstanceListSupplier build() {
+			return new HealthCheckServiceInstanceListSupplier(delegate, healthCheck, webClient);
+		}
+
+	}
+
 }
