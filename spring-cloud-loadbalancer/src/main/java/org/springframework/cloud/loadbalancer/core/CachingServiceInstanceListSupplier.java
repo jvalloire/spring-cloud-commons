@@ -27,8 +27,7 @@ import reactor.core.publisher.Mono;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.loadbalancer.annotation.configbuilder.AbstractServiceInstanceListSupplierBuilder;
-import org.springframework.cloud.loadbalancer.annotation.configbuilder.RequiredFieldNullException;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.ServiceInstanceListSupplierBuilder;
 
 /**
  * A {@link ServiceInstanceListSupplier} implementation that tries retrieving
@@ -107,7 +106,7 @@ public class CachingServiceInstanceListSupplier implements ServiceInstanceListSu
 		return new Builder();
 	}
 
-	public static class Builder extends AbstractServiceInstanceListSupplierBuilder {
+	public static class Builder extends ServiceInstanceListSupplierBuilder {
 
 		private CacheManager cacheManager;
 
@@ -133,10 +132,11 @@ public class CachingServiceInstanceListSupplier implements ServiceInstanceListSu
 
 		public CachingServiceInstanceListSupplier build() {
 			if (cacheManager == null) {
-				throw new RequiredFieldNullException("cacheManager");
+				throw new IllegalArgumentException(buildNullCheckMessage("cacheManager"));
 			}
 			if (delegate == null) {
-				throw new RequiredFieldNullException("delegate");
+				throw new IllegalArgumentException(buildNullCheckMessage("delegate"));
+
 			}
 			return new CachingServiceInstanceListSupplier(delegate, cacheManager);
 		}

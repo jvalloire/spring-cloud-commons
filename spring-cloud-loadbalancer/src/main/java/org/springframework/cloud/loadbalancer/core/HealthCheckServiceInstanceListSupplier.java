@@ -31,6 +31,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerProperties;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.ServiceInstanceListSupplierBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -161,7 +162,7 @@ public class HealthCheckServiceInstanceListSupplier
 		return new Builder(healthCheck, webClient);
 	}
 
-	public static class Builder {
+	public static class Builder extends ServiceInstanceListSupplierBuilder {
 
 		private ServiceInstanceListSupplier delegate;
 		private LoadBalancerProperties.HealthCheck healthCheck;
@@ -192,6 +193,15 @@ public class HealthCheckServiceInstanceListSupplier
 		}
 
 		public HealthCheckServiceInstanceListSupplier build() {
+			if (delegate == null) {
+				throw new IllegalArgumentException(buildNullCheckMessage("delegate"));
+			}
+			if (healthCheck == null) {
+				throw new IllegalArgumentException(buildNullCheckMessage("healthCheck"));
+			}
+			if (webClient == null) {
+				throw new IllegalArgumentException(buildNullCheckMessage("webClient"));
+			}
 			return new HealthCheckServiceInstanceListSupplier(delegate, healthCheck, webClient);
 		}
 

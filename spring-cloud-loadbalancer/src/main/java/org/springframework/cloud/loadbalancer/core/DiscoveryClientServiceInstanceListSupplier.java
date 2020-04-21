@@ -24,8 +24,7 @@ import reactor.core.scheduler.Schedulers;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.loadbalancer.annotation.configbuilder.AbstractServiceInstanceListSupplierBuilder;
-import org.springframework.cloud.loadbalancer.annotation.configbuilder.RequiredFieldNullException;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.ServiceInstanceListSupplierBuilder;
 import org.springframework.core.env.Environment;
 
 import static org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory.PROPERTY_NAME;
@@ -85,7 +84,7 @@ public class DiscoveryClientServiceInstanceListSupplier
 		return new Builder();
 	}
 
-	public static final class Builder extends AbstractServiceInstanceListSupplierBuilder {
+	public static final class Builder extends ServiceInstanceListSupplierBuilder {
 
 		private Object discoveryClient;
 		private Environment environment;
@@ -117,10 +116,12 @@ public class DiscoveryClientServiceInstanceListSupplier
 		// TODO: less conditions?
 		public DiscoveryClientServiceInstanceListSupplier build() {
 			if (discoveryClient == null) {
-				throw new RequiredFieldNullException("discoveryClient");
+				throw new IllegalArgumentException(buildNullCheckMessage("discoveryClient"));
+
 			}
 			if (environment == null) {
-				throw new RequiredFieldNullException("environment");
+				throw new IllegalArgumentException(buildNullCheckMessage("environment"));
+
 			}
 			if (discoveryClient instanceof DiscoveryClient) {
 				return new DiscoveryClientServiceInstanceListSupplier((DiscoveryClient) discoveryClient,

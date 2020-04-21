@@ -23,6 +23,7 @@ import java.util.Map;
 import reactor.core.publisher.Flux;
 
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.loadbalancer.annotation.configbuilder.ServiceInstanceListSupplierBuilder;
 import org.springframework.cloud.loadbalancer.config.LoadBalancerZoneConfig;
 
 /**
@@ -89,6 +90,38 @@ public class ZonePreferenceServiceInstanceListSupplier
 			return metadata.get(ZONE);
 		}
 		return null;
+	}
+
+	public static class Builder extends ServiceInstanceListSupplierBuilder {
+
+		private ServiceInstanceListSupplier delegate;
+
+		private LoadBalancerZoneConfig zoneConfig;
+
+		private Builder() {
+
+		}
+
+		public Builder withDelegate(ServiceInstanceListSupplier delegate) {
+			this.delegate = delegate;
+			return this;
+		}
+
+		public Builder withZoneConfig(LoadBalancerZoneConfig zoneConfig) {
+			this.zoneConfig = zoneConfig;
+			return this;
+		}
+
+		public ZonePreferenceServiceInstanceListSupplier build() {
+			if(delegate == null) {
+				throw new IllegalArgumentException(buildNullCheckMessage("delegate"));
+			}
+			if(zoneConfig == null) {
+				throw new IllegalArgumentException(buildNullCheckMessage("zoneConfig"));
+			}
+			return new ZonePreferenceServiceInstanceListSupplier(delegate, zoneConfig);
+		}
+
 	}
 
 }
