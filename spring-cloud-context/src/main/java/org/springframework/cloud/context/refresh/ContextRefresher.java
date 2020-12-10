@@ -29,6 +29,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.cloud.bootstrap.BootstrapApplicationListener;
+import org.springframework.cloud.bootstrap.config.BootstrapPropertySource;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScope;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -145,10 +146,13 @@ public class ContextRefresher {
 			List<String> toRemove = new ArrayList<>();
 			// this is a CopyOnWriteArrayList, it doesn't support Iterator.remove
 			for (PropertySource<?> propertySource : target) {
+				// only process `BootstrapPropertySource`s which are the ones coming from Spring Cloud Config server
+				if (propertySource instanceof BootstrapPropertySource<?>) {
 					String name = propertySource.getName();
 					if (!newPropertySources.contains(name)) {
 						toRemove.add(name);
 					}
+				}
 			}
 			for (String name : toRemove) {
 				target.remove(name);

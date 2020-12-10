@@ -31,6 +31,7 @@ import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.boot.test.util.TestPropertyValues.Type;
 import org.springframework.cloud.bootstrap.TestBootstrapConfiguration;
+import org.springframework.cloud.bootstrap.config.BootstrapPropertySource;
 import org.springframework.cloud.bootstrap.config.PropertySourceBootstrapConfiguration;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.context.scope.refresh.RefreshScope;
@@ -80,15 +81,18 @@ public class ContextRefresherTests {
 				"--spring.main.web-application-type=none", "--debug=false",
 				"--spring.main.bannerMode=OFF")) {
 			context.getEnvironment().setActiveProfiles("refresh");
-			context.getEnvironment().getPropertySources().addLast(new MapPropertySource("to-remove", Collections.emptyMap()));
+			context.getEnvironment().getPropertySources()
+					.addLast(new BootstrapPropertySource<>(
+							new MapPropertySource("to-remove", Collections.emptyMap()))
+					);
 
 			List<String> names = names(context.getEnvironment().getPropertySources());
-			then(names).containsSequence("to-remove");
+			then(names).containsSequence("bootstrapProperties-to-remove");
 
 			ContextRefresher refresher = new ContextRefresher(context, this.scope);
 			refresher.refresh();
 			names = names(context.getEnvironment().getPropertySources());
-			then(names).doesNotContain("to-remove");
+			then(names).doesNotContain("bootstrapProperties-to-remove");
 		}
 	}
 
